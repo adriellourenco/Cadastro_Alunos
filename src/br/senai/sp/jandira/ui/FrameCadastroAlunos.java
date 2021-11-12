@@ -9,12 +9,16 @@ import java.util.Iterator;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 
@@ -79,6 +83,7 @@ public class FrameCadastroAlunos extends JFrame {
 		contentPane.add(lblPeriodo);
 		
 		JComboBox comboPeriodo = new JComboBox();
+		
 		DefaultComboBoxModel<String> modelPeriodos = new DefaultComboBoxModel<String>();
 		
 		for (Periodo p : Periodo.values()) {
@@ -120,15 +125,26 @@ public class FrameCadastroAlunos extends JFrame {
 				aluno.setMatricula(textMatricula.getText());
 				aluno.setNome(textNome.getText());
 				
+				//Determinar o Período Selecionado no ComboBox
+				aluno.setPeriodo(Periodo.values()[comboPeriodo.getSelectedIndex()]);
+				
 				turma.gravar(aluno, posicao);
 				posicao++;
-				
+
 				//Adicionar o nome do aluno ao model da lista
-				
 				listaModel.addElement(aluno.getNome());
+				
+				if (posicao == turma.getLenght()) {
+					btnSalvarAluno.setEnabled(false);
+					
+					//Apresentar uma mensagem ao usuário - null é para a messagem ser direcionada a janela que o chamou!
+					JOptionPane.showMessageDialog(null, "A turma já está cheia!", "Turma Cheia!", JOptionPane.WARNING_MESSAGE);
+				}
 				
 			}
 		});
+		
+		
 		
 		btnExibirAlunos.addActionListener(new ActionListener() {
 			
@@ -137,10 +153,27 @@ public class FrameCadastroAlunos extends JFrame {
 				for(Aluno aluno : turma.listarTodos()) {
 					System.out.println(aluno.getNome());
 					System.out.println(aluno.getMatricula());
+					System.out.println(aluno.getPeriodo());
+					System.out.println(aluno.getPeriodo().getHorario());
 					System.out.println("------------------");
 				}
 				
 			}
 		});
+		
+		
+		
+		listAlunos.addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				Aluno aluno = turma.listarAluno(listAlunos.getSelectedIndex());
+				textMatricula.setText(aluno.getMatricula());
+				textNome.setText(aluno.getNome());
+				comboPeriodo.setSelectedIndex(aluno.getPeriodo().ordinal());
+				
+			}
+		} );
 	}
+	
 }
